@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+import os
 import mysql.connector
 from mysql.connector import Error
 
@@ -13,6 +14,7 @@ db_config = {
     'database': 'mealprep_db'  # The name of your database
 }
 
+where_am_i = os.environ.get("WHEREAMI", None)
 app = FastAPI()
 
 # Enable CORS to allow Angular frontend to communicate with FastAPI backend
@@ -69,4 +71,4 @@ def get_mealprep_data():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app=app, host="0.0.0.0", port=8000)
+    uvicorn.run(app=app, host="0.0.0.0", port=5002)
