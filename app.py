@@ -36,12 +36,18 @@ def connect_to_db():
 
 @app.get("/")
 def hello_world():
-    return {"message": "Hello, from FastAPI!"}
+    global where_am_i
+
+    if where_am_i is None:
+        where_am_i = "NOT IN DOCKER"
+
+    return f'Hello, from {where_am_i}! I changed.'
 
 
 # Endpoint to fetch data from the 'mealprep' table
 @app.get("/mealprep")
 def get_mealprep_data():
+    print("mealprepping")
     try:
         connect_to_db()
         cursor = connection.cursor()
@@ -63,4 +69,4 @@ def get_mealprep_data():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app=app, host="0.0.0.0", port=8080)
+    uvicorn.run(app=app, host="0.0.0.0", port=8000)
