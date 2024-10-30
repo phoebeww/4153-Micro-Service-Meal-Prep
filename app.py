@@ -13,11 +13,11 @@ from mysql.connector import Error
 
 # Define the database connection configuration
 db_config = {
-    'host': '35.196.59.220',  # The IP address of your MySQL instance
-    'port': 3306,  # Default port for MySQL
-    'user': 'root',  # The user you want to connect as
-    'password': 'dbuserdbuser',  # Replace with your actual password
-    'database': 'mealprep_db'  # The name of your database
+    'host': '35.196.59.220',
+    'port': 3306,
+    'user': 'root',
+    'password': 'dbuserdbuser',
+    'database': 'mealplan_db' 
 }
 
 where_am_i = os.environ.get("WHEREAMI", None)
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 # Enable CORS to allow Angular frontend to communicate with FastAPI backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],  # Replace with your Angular frontend URL
+    allow_origins=["http://localhost:4200"], #Angular frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -117,13 +117,29 @@ def get_mealprep_data(date: str):
         weekly_column_names = [column[0] for column in cursor.description]
         weekly_result = [dict(zip(weekly_column_names, row)) for row in weekly_meal_plans]
 
-        # Second query to get meals
+        # Second query to get meal ids
+        # query2 = """
+        # SELECT meal_plans.*
+        # FROM meal_plans
+        # JOIN daily_meal_plans dmp ON dmp.meal_id = meal_plans.meal_id
+        # WHERE dmp.date = %s;
+        # """
+
         query2 = """
-        SELECT meals.*
-        FROM meals
-        JOIN daily_meal_plans dmp ON dmp.meal_id = meals.meal_id
-        WHERE dmp.date = %s;
+            SELECT 
+                dmp.date,
+                recipes_database.recipes_breakfast.name AS breakfast_recipe,
+                recipes_database.recipes_lunch.name AS lunch_recipe,
+                recipes_database.recipes_dinner.name AS dinner_recipe
+            FROM mealplan_db.meal_plans
+            JOIN mealplan_db.daily_meal_plans dmp ON dmp.meal_id = meal_plans.meal_id
+            LEFT JOIN recipes_database.recipes AS recipes_breakfast ON meal_plans.breakfast_recipe = recipes_breakfast.recipe_id
+            LEFT JOIN recipes_database.recipes AS recipes_lunch ON meal_plans.lunch_recipe = recipes_lunch.recipe_id
+            LEFT JOIN recipes_database.recipes AS recipes_dinner ON meal_plans.dinner_recipe = recipes_dinner.recipe_id
+            WHERE dmp.date = %s;
         """
+
+
         cursor.execute(query2, (date,))
         meals = cursor.fetchall()
 
